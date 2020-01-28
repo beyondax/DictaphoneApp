@@ -6,8 +6,9 @@ import android.media.MediaRecorder;
 import android.os.Environment;
 import android.util.Log;
 
+import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import static android.content.ContentValues.TAG;
 
@@ -20,8 +21,6 @@ public class MyMediaRecorder {
     private MediaRecorder recorder = null;
 
     private MediaPlayer player = null;
-
-    private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
     public void onRecord(boolean start) {
@@ -43,8 +42,8 @@ public class MyMediaRecorder {
     private void startPlaying() {
         player = new MediaPlayer();
         try {
-            player.setDataSource(fileName + format);
-            Log.d(TAG, "startPlaying: " + fileName + format);
+            player.setDataSource(fileName);
+            Log.d(TAG, "startPlaying: " + fileName);
             player.prepare();
             player.start();
         } catch (IOException e) {
@@ -61,16 +60,22 @@ public class MyMediaRecorder {
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        recorder.setOutputFile(fileName);
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+
+        File outputFolder = new File("sdcard/RecordedAudio/MyAudio");
+        File output = new File(outputFolder.getAbsolutePath() + new Date().getTime() + ".3gp");
+        Log.i(TAG, "startRecording: " + output.getAbsolutePath());
+        recorder.setOutputFile(output.getAbsolutePath());
+        recorder.setMaxDuration(3000);
 
         try {
             recorder.prepare();
+            recorder.start();
         } catch (IOException e) {
             Log.e(LOG_TAG, "prepare() failed");
         }
 
-        recorder.start();
+
     }
 
     private void stopRecording() {

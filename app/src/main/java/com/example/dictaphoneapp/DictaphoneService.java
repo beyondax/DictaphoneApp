@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
@@ -45,7 +46,7 @@ public class DictaphoneService extends Service {
         if (ACTION_CLOSE.equals(intent.getAction())) {
             stopSelf();
         } else {
-            mMyMediaRecorder.onRecord(true);
+            startRecording();
             startForeground(NOTIFICATION_ID, createNotification());
         }
 
@@ -53,16 +54,26 @@ public class DictaphoneService extends Service {
     }
 
     private Notification createNotification() {
-        Intent intent = new Intent(this, DictaphoneActivity.class); intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID);
+
+        Intent intent = new Intent(this, DictaphoneActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-        createNotificationChannel();
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+
+        Intent intentCloseService = new Intent(this, DictaphoneService.class);
+        intentCloseService.setAction(ACTION_CLOSE);
+        PendingIntent pendingIntentCloseService = PendingIntent.getService(this, 0, intentCloseService, 0);
+
+        builder.setSmallIcon(R.drawable.ic_recording)
+                .setColor(Color.RED)
                 .setContentTitle(getString(R.string.notification_title))
                 .setContentText(getString(R.string.notification_description))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .addAction(R.drawable.ic_stop, getString(R.string.stop_recording), pendingIntentCloseService)
                 .setContentIntent(pendingIntent)
-                .setAutoCancel(true); return builder.build();
+                .setAutoCancel(true);
+
+        return builder.build();
     }
 
     public void createNotificationChannel() {
@@ -75,5 +86,16 @@ public class DictaphoneService extends Service {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+
+    private void startRecording() {
+        mMyMediaRecorder.onRecord(true);
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopSelf();
     }
 }

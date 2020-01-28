@@ -6,8 +6,8 @@
     <string name="stop_recording">Stop Recording</string>
     <string name="start_playing">Play</string>
     <string name="stop_playing">Pause</string>
-    <string name="notification_title">Title</string>
-    <string name="notification_description">Description</string>
-    <string name="notification_channel_name">Channel</string>
-    <string name="notification_channel_description">channel_description</string>
+    <string name="notification_title">Recording</string>
+    <string name="notification_description">Your voice is being recorded!</string>
+    <string name="notification_channel_name">Channel01</string>
+    <string name="notification_channel_description">Recording channel</string>
 </resources>

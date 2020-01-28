@@ -1,13 +1,12 @@
 package com.example.dictaphoneapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
-
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 public class DictaphoneActivity extends AppCompatActivity {
 
@@ -17,7 +16,6 @@ public class DictaphoneActivity extends AppCompatActivity {
            Manifest.permission.READ_EXTERNAL_STORAGE,
            Manifest.permission.WRITE_EXTERNAL_STORAGE,
            Manifest.permission.RECORD_AUDIO,
-
     };
 
     @Override
