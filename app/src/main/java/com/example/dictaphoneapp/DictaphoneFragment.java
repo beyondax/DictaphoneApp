@@ -48,10 +48,7 @@ public class DictaphoneFragment extends Fragment {
 
         mFilesRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(),
                 DividerItemDecoration.VERTICAL));
-
-        mFilePathList.add("/sdcard/sdcard");
-
-
+        
         File outputFolder = new File("/sdcard/RecordedAudio");
         File[] files = outputFolder.listFiles();
         int i = 0;
