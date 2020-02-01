@@ -16,7 +16,7 @@ import androidx.core.app.NotificationCompat;
 
 import static android.content.ContentValues.TAG;
 
-public class DictaphoneService extends Service {
+public class DictaphoneRecorderService extends Service {
 
 
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
@@ -24,7 +24,7 @@ public class DictaphoneService extends Service {
     private static final int NOTIFICATION_ID = 1;
 
 
-    MyMediaRecorder mMyMediaRecorder = new MyMediaRecorder();
+    private MyMediaRecorder mMyMediaRecorder = new MyMediaRecorder();
 
 
     @Nullable
@@ -60,14 +60,14 @@ public class DictaphoneService extends Service {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
-        Intent intentCloseService = new Intent(this, DictaphoneService.class);
+        Intent intentCloseService = new Intent(this, DictaphoneRecorderService.class);
         intentCloseService.setAction(ACTION_CLOSE);
         PendingIntent pendingIntentCloseService = PendingIntent.getService(this, 0, intentCloseService, 0);
 
         builder.setSmallIcon(R.drawable.ic_recording)
                 .setColor(Color.RED)
-                .setContentTitle(getString(R.string.notification_title))
-                .setContentText(getString(R.string.notification_description))
+                .setContentTitle(getString(R.string.notification_recorder_title))
+                .setContentText(getString(R.string.notification_recorder_description))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .addAction(R.drawable.ic_stop, getString(R.string.stop_recording), pendingIntentCloseService)
                 .setContentIntent(pendingIntent)
@@ -78,8 +78,8 @@ public class DictaphoneService extends Service {
 
     public void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = getString(R.string.notification_channel_name);
-            String description = getString(R.string.notification_channel_description);
+            CharSequence name = getString(R.string.notification_recorder_channel_name);
+            String description = getString(R.string.notification_recorder_description);
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);

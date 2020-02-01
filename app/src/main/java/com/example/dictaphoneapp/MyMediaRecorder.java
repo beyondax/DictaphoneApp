@@ -16,6 +16,8 @@ public class MyMediaRecorder {
 
     private static final String LOG_TAG = "AudioRecordTest";
 
+    private static final String AUDIO_FORMAT = ".3gp";
+
     private static String fileName = Environment.getDataDirectory().toString();
 
     private MediaRecorder recorder = null;
@@ -62,11 +64,11 @@ public class MyMediaRecorder {
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
 
-        File outputFolder = new File("sdcard/RecordedAudio/MyAudio");
-        File output = new File(outputFolder.getAbsolutePath() + new Date().getTime() + ".3gp");
+        File outputFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "RecordedAudio");
+        File output = new File(outputFolder.getAbsolutePath() + new Date().getTime() + AUDIO_FORMAT);
         Log.i(TAG, "startRecording: " + output.getAbsolutePath());
         recorder.setOutputFile(output.getAbsolutePath());
-        recorder.setMaxDuration(3000);
+        recorder.setMaxDuration(0);
 
         try {
             recorder.prepare();
