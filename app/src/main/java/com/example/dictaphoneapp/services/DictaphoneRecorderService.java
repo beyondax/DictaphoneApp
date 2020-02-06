@@ -1,4 +1,4 @@
-package com.example.dictaphoneapp;
+package com.example.dictaphoneapp.services;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -14,11 +14,15 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import com.example.dictaphoneapp.DictaphoneActivity;
+import com.example.dictaphoneapp.R;
+import com.example.dictaphoneapp.model.MyMediaRecorder;
+
 import static android.content.ContentValues.TAG;
 
 public class DictaphoneRecorderService extends Service {
 
-
+    public static boolean RECORDER_SERVICE_RUNNING;
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
     public static final String ACTION_CLOSE = "FOREGROUND_SERVICE_ACTION_CLOSE";
     private static final int NOTIFICATION_ID = 1;
@@ -37,6 +41,7 @@ public class DictaphoneRecorderService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        RECORDER_SERVICE_RUNNING = true;
         createNotificationChannel();
         Log.d(TAG, "onCreate: called");
     }
@@ -45,6 +50,7 @@ public class DictaphoneRecorderService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (ACTION_CLOSE.equals(intent.getAction())) {
             stopSelf();
+            stopRecording();
         } else {
             startRecording();
             startForeground(NOTIFICATION_ID, createNotification());
@@ -57,7 +63,7 @@ public class DictaphoneRecorderService extends Service {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID);
 
         Intent intent = new Intent(this, DictaphoneActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
         Intent intentCloseService = new Intent(this, DictaphoneRecorderService.class);
@@ -69,7 +75,7 @@ public class DictaphoneRecorderService extends Service {
                 .setContentTitle(getString(R.string.notification_recorder_title))
                 .setContentText(getString(R.string.notification_recorder_description))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .addAction(R.drawable.ic_stop, getString(R.string.stop_recording), pendingIntentCloseService)
+                .addAction(new NotificationCompat.Action(0, getString(R.string.stop_recording), pendingIntentCloseService))
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
 
@@ -92,9 +98,14 @@ public class DictaphoneRecorderService extends Service {
         mMyMediaRecorder.onRecord(true);
     }
 
+    private void stopRecording() {
+        mMyMediaRecorder.onRecord(false);
+    }
+
 
     @Override
     public void onDestroy() {
+        RECORDER_SERVICE_RUNNING = false;
         super.onDestroy();
         stopSelf();
     }

@@ -8,14 +8,16 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.example.dictaphoneapp.fragments.DictaphoneFragment;
+
 public class DictaphoneActivity extends AppCompatActivity {
 
     private static final int PERMISSIONS_CODE = 1;
 
     private final String[] PERMISSIONS = {
-           Manifest.permission.READ_EXTERNAL_STORAGE,
-           Manifest.permission.WRITE_EXTERNAL_STORAGE,
-           Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.RECORD_AUDIO,
     };
 
     @Override
