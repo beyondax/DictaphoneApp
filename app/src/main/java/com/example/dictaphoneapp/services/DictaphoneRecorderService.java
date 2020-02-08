@@ -18,16 +18,14 @@ import com.example.dictaphoneapp.DictaphoneActivity;
 import com.example.dictaphoneapp.R;
 import com.example.dictaphoneapp.model.MyMediaRecorder;
 
-import static android.content.ContentValues.TAG;
-
 public class DictaphoneRecorderService extends Service {
 
     public static boolean RECORDER_SERVICE_RUNNING;
-    public static final String CHANNEL_ID = "ForegroundServiceChannel";
-    public static final String ACTION_CLOSE = "FOREGROUND_SERVICE_ACTION_CLOSE";
+    public static final String CHANNEL_ID = "PlayerServiceChannel";
+    public static final String ACTION_CLOSE = "RECORDER_SERVICE_ACTION_CLOSE";
+    public static String TAG = "DictaphoneRecorderService";
+
     private static final int NOTIFICATION_ID = 1;
-
-
     private MyMediaRecorder mMyMediaRecorder = new MyMediaRecorder();
 
 
@@ -49,11 +47,11 @@ public class DictaphoneRecorderService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (ACTION_CLOSE.equals(intent.getAction())) {
-            stopSelf();
             stopRecording();
+            stopSelf();
         } else {
-            startRecording();
             startForeground(NOTIFICATION_ID, createNotification());
+            startRecording();
         }
 
         return START_NOT_STICKY;
@@ -105,8 +103,9 @@ public class DictaphoneRecorderService extends Service {
 
     @Override
     public void onDestroy() {
-        RECORDER_SERVICE_RUNNING = false;
+        Log.d(TAG, "onDestroy: RecorderService called");
         super.onDestroy();
+        RECORDER_SERVICE_RUNNING = false;
         stopSelf();
     }
 }

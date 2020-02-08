@@ -73,15 +73,16 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileLi
                 public void onClick(View v) {
                     Log.d(TAG, "onClick: Play!");
                     startService();
-
                 }
             });
         }
 
         private void startService() {
 
+
             Intent intent = new Intent(itemView.getContext(), DictaphonePlayerService.class);
             intent.putExtra(TAG, textView.getText());
+            intent.setAction(DictaphonePlayerService.ACTION_START);
             Log.d(TAG, "startService: " + textView.getText());
             itemView.getContext().startService(intent);
 

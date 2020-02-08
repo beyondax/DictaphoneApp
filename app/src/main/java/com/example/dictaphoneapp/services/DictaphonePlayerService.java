@@ -19,17 +19,23 @@ import com.example.dictaphoneapp.DictaphoneActivity;
 import com.example.dictaphoneapp.R;
 import com.example.dictaphoneapp.model.MyMediaRecorder;
 
-import static com.example.dictaphoneapp.services.DictaphoneRecorderService.ACTION_CLOSE;
 
 
 public class DictaphonePlayerService extends Service {
 
 
-    public static final String CHANNEL_ID = "Playing";
+    public static final String CHANNEL_ID = "PlayerServiceChannel";
     public static final String TAG = "DictaphonePlayerService";
     public static final String FILE_LIST_ADAPTER_FILE_PATH = "FileListAdapterFilePath";
-    private static final int NOTIFICATION_ID = 103;
+    public static final String FILEPATH = "FILEPATH";
+    public static final String ACTION_PLAY = "PLAYER_SERVICE_ACTION_PLAY";
+    public static final String ACTION_STOP = "PLAYER_SERVICE_ACTION_STOP";
+    public static final String ACTION_START = "PLAYER_SERVICE_START";
     public static boolean PLAYER_SERVICE_RUNNING;
+    private String filePath;
+
+
+    private static final int NOTIFICATION_ID = 103;
     private MyMediaRecorder mMyMediaRecorder = new MyMediaRecorder();
 
     @Nullable
@@ -50,14 +56,29 @@ public class DictaphonePlayerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand called");
 
-        if (ACTION_CLOSE.equals(intent.getAction())) {
-            stopSelf();
-            
-        } else {
-            String path = intent.getExtras().getString(FILE_LIST_ADAPTER_FILE_PATH);
-            startPlaying(path);
-            startForeground(NOTIFICATION_ID, createNotification());
+        if (intent.getStringExtra(FILE_LIST_ADAPTER_FILE_PATH) != null) {
+            filePath = intent.getExtras().getString(FILE_LIST_ADAPTER_FILE_PATH);
         }
+
+
+        if (ACTION_START.equals(intent.getAction())) {
+            startForeground(NOTIFICATION_ID, createNotification());
+            startPlaying(filePath);
+        }
+
+        if (ACTION_PLAY.equals(intent.getAction())) {
+            Log.d(TAG, "onStartCommand: ACTION_PLAY");
+//            filePath = intent.getExtras().getString(FILEPATH);
+            Log.d(TAG, filePath);
+
+            startPlaying(intent.getExtras().getString("FILEPATH"));
+        }
+
+        if (ACTION_STOP.equals(intent.getAction())) {
+            Log.d(TAG, "onStartCommand: ACTION_STOP");
+            stopPlaying();
+        }
+
 
         return START_NOT_STICKY;
     }
@@ -82,25 +103,34 @@ public class DictaphonePlayerService extends Service {
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
-        Intent intentCloseService = new Intent(this, DictaphonePlayerService.class);
-        intentCloseService.setAction(ACTION_CLOSE);
-        PendingIntent pendingIntentCloseService = PendingIntent.getService(this, 0, intentCloseService, 0);
+        Intent stopPlaying = new Intent(this, DictaphonePlayerService.class);
+        stopPlaying.putExtra(FILEPATH, filePath);
+        stopPlaying.setAction(ACTION_STOP);
+        PendingIntent pendingIntentStopPlaying = PendingIntent.getService(this, 0, stopPlaying, 0);
+
+
+        Intent startPlaying = new Intent(this, DictaphonePlayerService.class);
+        startPlaying.putExtra(FILEPATH, filePath);
+        startPlaying.setAction(ACTION_PLAY);
+        PendingIntent pendingIntentStartPlaying = PendingIntent.getService(this, 0, startPlaying, 0);
+
 
         builder.setSmallIcon(R.drawable.ic_playing)
                 .setColor(Color.GREEN)
                 .setContentTitle(getString(R.string.notification_player_title))
-                .setContentText(getString(R.string.notification_player_description))
+                .setContentText(filePath)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .addAction(new NotificationCompat.Action(R.drawable.ic_stop, getString(R.string.stop_playing), pendingIntentCloseService))
+                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_play_arrow_24, getString(R.string.start_playing), pendingIntentStartPlaying))
+                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_stop_24, getString(R.string.stop_playing), pendingIntentStopPlaying))
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
 
         return builder.build();
     }
 
-    private void stopPlaying(String path) {
+    private void stopPlaying() {
 
-        mMyMediaRecorder.onPlay(false, path);
+        mMyMediaRecorder.onPlay(false);
 
     }
 

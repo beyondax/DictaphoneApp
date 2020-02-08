@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.dictaphoneapp.R;
 import com.example.dictaphoneapp.adapters.FileListAdapter;
 import com.example.dictaphoneapp.model.MyMediaRecorder;
+import com.example.dictaphoneapp.services.DictaphonePlayerService;
 import com.example.dictaphoneapp.services.DictaphoneRecorderService;
 
 import java.util.ArrayList;
@@ -83,31 +84,32 @@ public class DictaphoneFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        mStopRecordingButton.setEnabled(false);
+
 
         mStartRecordingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startService();
                 recorderServiceOnButtonsConfig();
+
             }
 
         });
 
-        mStopRecordingButton.setEnabled(false);
+
         mStopRecordingButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
+
                 stopService();
                 mStartRecordingButton.setEnabled(true);
-                mStopRecordingButton.setEnabled(false);
-                mStartRecordingButton.setText(R.string.start_recording);
+                mStartRecordingButton.setText(R.string.recording_button_default_title);
 
-                if (mFilePathList.size() > 0) {
-                    mFilePathList.clear();
-                    mMediaRecorder.getFilesList(mFilePathList);
-                    mAdapter.notifyDataSetChanged();
-                }
+                mFilePathList.clear();
+                mMediaRecorder.getFilesList(mFilePathList);
+                mAdapter.notifyDataSetChanged();
             }
         });
 
@@ -115,7 +117,8 @@ public class DictaphoneFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                mMediaRecorder.onPlay(true);
+                stopPlaying();
+
             }
         });
 
@@ -137,24 +140,25 @@ public class DictaphoneFragment extends Fragment {
 
     }
 
+    private void stopPlaying() {
+
+        Intent intent = new Intent(getActivity(), DictaphonePlayerService.class);
+        intent.setAction(DictaphonePlayerService.ACTION_STOP);
+        getActivity().startService(intent);
+
+    }
+
     private void recorderServiceOnButtonsConfig() {
         mStartRecordingButton.setEnabled(false);
         mStartRecordingButton.setText(R.string.recording_button_pressed_title);
         mStopRecordingButton.setEnabled(true);
     }
 
-    private void playerServiceOnButtonsConfig() {
-        mStartRecordingButton.setEnabled(false);
-        mStartRecordingButton.setText(R.string.recording_button_pressed_title);
-        mStopRecordingButton.setEnabled(true);
-    }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        if (DictaphoneRecorderService.RECORDER_SERVICE_RUNNING) {
-            recorderServiceOnButtonsConfig();
         }
-    }
+
 }
