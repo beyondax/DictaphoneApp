@@ -12,7 +12,7 @@ import com.example.dictaphoneapp.fragments.DictaphoneFragment;
 
 public class DictaphoneActivity extends AppCompatActivity {
 
-    private static final int PERMISSIONS_CODE = 1;
+    private final int PERMISSIONS_CODE = 1;
 
     private final String[] PERMISSIONS = {
             Manifest.permission.READ_EXTERNAL_STORAGE,

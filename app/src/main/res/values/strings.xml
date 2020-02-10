@@ -6,6 +6,7 @@
     <string name="stop_recording">Stop Recording</string>
     <string name="start_playing">Play again</string>
     <string name="stop_playing">Stop</string>
+    <string name="stop_service">Close player</string>
     <string name="notification_recorder_title">Recording</string>
     <string name="notification_player_title">Playing</string>
     <string name="notification_recorder_description">Your voice is being recorded!</string>

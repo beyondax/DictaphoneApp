@@ -8,32 +8,36 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 
-public class MyMediaRecorder {
+public class MyMediaModel {
 
     private static final String TAG = "MyMediaRecorder";
 
     private final String AUDIO_FORMAT = ".3gp";
     private final String AUDIO_FOLDER = "Recorded";
     private final String FILE_PREFIX = "MyAudio";
+
     private MediaPlayer player;
     private MediaRecorder recorder;
 
-
     private boolean isRecording = false;
-
     private boolean isPaused = false;
+    private boolean isPlaying = false;
 
 
-    public boolean isIsPaused() {
-        return isPaused;
-    }
+//    public boolean isPaused() {
+//        return isPaused;
+//    }
+//    public boolean isRecording() {
+//        return isRecording;
+//    }
 
-    public boolean isRecording() {
-        return isRecording;
+    public boolean isPlaying() {
+        return isPlaying;
     }
 
 
@@ -62,15 +66,15 @@ public class MyMediaRecorder {
         stopPlaying();
     }
 
-    public void onPause(boolean start) {
-        if (start) {
-            isPaused = true;
-            player.pause();
-        } else {
-            isPaused = false;
-            player.start();
-        }
-    }
+//    public void onPause(boolean start) {
+//        if (start) {
+//            isPaused = true;
+//            player.pause();
+//        } else {
+//            isPaused = false;
+//            player.start();
+//        }
+//    }
 
 
     private void startPlaying(String filePath) {
@@ -78,9 +82,8 @@ public class MyMediaRecorder {
         player = new MediaPlayer();
 
         try {
-            player.setDataSource(filePath);
-            Log.d(TAG, "startPlaying: " + filePath);
 
+            Log.d(TAG, "startPlaying: " + filePath);
             player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
@@ -88,12 +91,12 @@ public class MyMediaRecorder {
                 }
             });
 
+            player.setDataSource(filePath);
             player.prepareAsync();
+
         } catch (IOException e) {
             Log.e(TAG, "prepare() failed");
         }
-
-
     }
 
     private void stopPlaying() {
@@ -108,7 +111,6 @@ public class MyMediaRecorder {
     }
 
     private void startRecording() {
-
         recorder = new MediaRecorder();
 
         createDir();
@@ -119,9 +121,9 @@ public class MyMediaRecorder {
 
         File output = new File(Environment.getExternalStorageDirectory().getAbsolutePath()
                 + File.separator + AUDIO_FOLDER, FILE_PREFIX
-//                + new SimpleDateFormat("HH:mm:s dd-MM").format(new Date())
-                + new Date().getTime()
+                + new SimpleDateFormat("HH-mm-ss FF-LL-YY").format(new Date())
                 + AUDIO_FORMAT);
+
         recorder.setOutputFile(output.getAbsolutePath());
         recorder.setMaxDuration(0);
 
@@ -133,25 +135,18 @@ public class MyMediaRecorder {
         } catch (IOException e) {
             Log.e(TAG, "prepare() failed" + e);
         }
-
-
     }
 
     private void createDir() {
-
         new File(Environment.getExternalStorageDirectory().getAbsolutePath(), File.separator + AUDIO_FOLDER).mkdirs();
-
     }
 
     private void stopRecording() {
-
         if (recorder != null) {
             recorder.stop();
             recorder.release();
             recorder = null;
         }
-
-
     }
 
     public void getFilesList(ArrayList<String> arrayList) {

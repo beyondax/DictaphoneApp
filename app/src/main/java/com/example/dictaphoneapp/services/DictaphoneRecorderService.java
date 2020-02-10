@@ -1,5 +1,6 @@
 package com.example.dictaphoneapp.services;
 
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -13,20 +14,21 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.dictaphoneapp.DictaphoneActivity;
 import com.example.dictaphoneapp.R;
-import com.example.dictaphoneapp.model.MyMediaRecorder;
+import com.example.dictaphoneapp.model.MyMediaModel;
 
 public class DictaphoneRecorderService extends Service {
 
-    public static boolean RECORDER_SERVICE_RUNNING;
+
     public static final String CHANNEL_ID = "PlayerServiceChannel";
     public static final String ACTION_CLOSE = "RECORDER_SERVICE_ACTION_CLOSE";
-    public static String TAG = "DictaphoneRecorderService";
+    public static final String TAG = "RecorderService";
 
     private static final int NOTIFICATION_ID = 1;
-    private MyMediaRecorder mMyMediaRecorder = new MyMediaRecorder();
+    private MyMediaModel mMyMediaModel = new MyMediaModel();
 
 
     @Nullable
@@ -39,7 +41,7 @@ public class DictaphoneRecorderService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        RECORDER_SERVICE_RUNNING = true;
+
         createNotificationChannel();
         Log.d(TAG, "onCreate: called");
     }
@@ -47,11 +49,15 @@ public class DictaphoneRecorderService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (ACTION_CLOSE.equals(intent.getAction())) {
+            sendMessage();
             stopRecording();
             stopSelf();
+
         } else {
+
             startForeground(NOTIFICATION_ID, createNotification());
             startRecording();
+
         }
 
         return START_NOT_STICKY;
@@ -68,10 +74,12 @@ public class DictaphoneRecorderService extends Service {
         intentCloseService.setAction(ACTION_CLOSE);
         PendingIntent pendingIntentCloseService = PendingIntent.getService(this, 0, intentCloseService, 0);
 
+
         builder.setSmallIcon(R.drawable.ic_recording)
                 .setColor(Color.RED)
                 .setContentTitle(getString(R.string.notification_recorder_title))
                 .setContentText(getString(R.string.notification_recorder_description))
+                .setOnlyAlertOnce(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .addAction(new NotificationCompat.Action(0, getString(R.string.stop_recording), pendingIntentCloseService))
                 .setContentIntent(pendingIntent)
@@ -81,6 +89,7 @@ public class DictaphoneRecorderService extends Service {
     }
 
     public void createNotificationChannel() {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = getString(R.string.notification_recorder_channel_name);
             String description = getString(R.string.notification_recorder_description);
@@ -89,23 +98,30 @@ public class DictaphoneRecorderService extends Service {
             channel.setDescription(description);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
+
         }
     }
 
     private void startRecording() {
-        mMyMediaRecorder.onRecord(true);
+        mMyMediaModel.onRecord(true);
     }
 
     private void stopRecording() {
-        mMyMediaRecorder.onRecord(false);
+        mMyMediaModel.onRecord(false);
     }
 
 
     @Override
     public void onDestroy() {
+
         Log.d(TAG, "onDestroy: RecorderService called");
         super.onDestroy();
-        RECORDER_SERVICE_RUNNING = false;
         stopSelf();
+    }
+
+    private void sendMessage() {
+        Log.d(TAG, "Broadcasting message");
+        Intent intent = new Intent("ACTION_CLOSE");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 }

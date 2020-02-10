@@ -1,5 +1,6 @@
 package com.example.dictaphoneapp.adapters;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -27,7 +28,6 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileLi
 
         inflater = LayoutInflater.from(ctx);
         this.mFileList = fileList;
-
 
     }
 
@@ -82,10 +82,27 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileLi
 
             Intent intent = new Intent(itemView.getContext(), DictaphonePlayerService.class);
             intent.putExtra(TAG, textView.getText());
-            intent.setAction(DictaphonePlayerService.ACTION_START);
+            if (isServiceRunningInForeground(itemView.getContext(), DictaphonePlayerService.class)) {
+                intent.setAction(DictaphonePlayerService.ACTION_PLAY);
+            } else {
+                intent.setAction(DictaphonePlayerService.ACTION_START);
+            }
             Log.d(TAG, "startService: " + textView.getText());
             itemView.getContext().startService(intent);
 
         }
+
+        private boolean isServiceRunningInForeground(Context context, Class<?> serviceClass) {
+            ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                if (serviceClass.getName().equals(service.service.getClassName())) {
+                    if (service.foreground) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
     }
 }

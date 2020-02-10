@@ -17,8 +17,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.example.dictaphoneapp.DictaphoneActivity;
 import com.example.dictaphoneapp.R;
-import com.example.dictaphoneapp.model.MyMediaRecorder;
-
+import com.example.dictaphoneapp.model.MyMediaModel;
 
 
 public class DictaphonePlayerService extends Service {
@@ -31,12 +30,13 @@ public class DictaphonePlayerService extends Service {
     public static final String ACTION_PLAY = "PLAYER_SERVICE_ACTION_PLAY";
     public static final String ACTION_STOP = "PLAYER_SERVICE_ACTION_STOP";
     public static final String ACTION_START = "PLAYER_SERVICE_START";
-    public static boolean PLAYER_SERVICE_RUNNING;
+    public static final String ACTION_CLOSE = "PLAYER_SERVICE_CLOSE";
+
     private String filePath;
 
 
     private static final int NOTIFICATION_ID = 103;
-    private MyMediaRecorder mMyMediaRecorder = new MyMediaRecorder();
+    private MyMediaModel mMyMediaModel = new MyMediaModel();
 
     @Nullable
     @Override
@@ -47,7 +47,6 @@ public class DictaphonePlayerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        PLAYER_SERVICE_RUNNING = true;
         createNotificationChannel();
         Log.d(TAG, "onCreate: called");
     }
@@ -63,15 +62,16 @@ public class DictaphonePlayerService extends Service {
 
         if (ACTION_START.equals(intent.getAction())) {
             startForeground(NOTIFICATION_ID, createNotification());
+            if (mMyMediaModel.isPlaying()) {
+                stopPlaying();
+            }
             startPlaying(filePath);
         }
 
         if (ACTION_PLAY.equals(intent.getAction())) {
             Log.d(TAG, "onStartCommand: ACTION_PLAY");
-//            filePath = intent.getExtras().getString(FILEPATH);
-            Log.d(TAG, filePath);
-
-            startPlaying(intent.getExtras().getString("FILEPATH"));
+            stopPlaying();
+            startPlaying(filePath);
         }
 
         if (ACTION_STOP.equals(intent.getAction())) {
@@ -79,6 +79,11 @@ public class DictaphonePlayerService extends Service {
             stopPlaying();
         }
 
+
+        if (ACTION_CLOSE.equals(intent.getAction())) {
+            Log.d(TAG, "onStartCommand: ACTION_CLOSE");
+            stopSelf();
+        }
 
         return START_NOT_STICKY;
     }
@@ -115,13 +120,19 @@ public class DictaphonePlayerService extends Service {
         PendingIntent pendingIntentStartPlaying = PendingIntent.getService(this, 0, startPlaying, 0);
 
 
+        Intent closeIntent = new Intent(this, DictaphonePlayerService.class);
+        startPlaying.setAction(ACTION_CLOSE);
+        PendingIntent pendingIntentClose = PendingIntent.getService(this, 0, startPlaying, 0);
+
         builder.setSmallIcon(R.drawable.ic_playing)
                 .setColor(Color.GREEN)
                 .setContentTitle(getString(R.string.notification_player_title))
                 .setContentText(filePath)
+                .setOnlyAlertOnce(true)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_play_arrow_24, getString(R.string.start_playing), pendingIntentStartPlaying))
                 .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_stop_24, getString(R.string.stop_playing), pendingIntentStopPlaying))
+                .addAction(new NotificationCompat.Action(0, getString(R.string.stop_service), pendingIntentClose))
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
 
@@ -130,20 +141,18 @@ public class DictaphonePlayerService extends Service {
 
     private void stopPlaying() {
 
-        mMyMediaRecorder.onPlay(false);
+        mMyMediaModel.onPlay(false);
 
     }
 
     private void startPlaying(String path) {
-
-        mMyMediaRecorder.onPlay(true, path);
-
+        mMyMediaModel.onPlay(true, path);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        PLAYER_SERVICE_RUNNING = false;
+
         Log.d(ContentValues.TAG, "onDestroy: called");
     }
 
